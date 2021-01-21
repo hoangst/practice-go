@@ -24,22 +24,24 @@ func crawlData(note int, c chan int)  {
 
 }
 
-func showData(c chan int)  {
+func showData(c chan int, quit chan int)  {
 	for i := 0; i < MAX_CHAN; i++ {
 		fmt.Println("Get value ", i, "data =", <-c)
 	}
+	quit <- 0
 }
 
 var myRand *rand.Rand
 
-const MIN_DELAY = 100
-const MAX_DELAY = 200
+const MIN_DELAY = 1000
+const MAX_DELAY = 2000
 
-const MAX_CHAN = 1000
+const MAX_CHAN = 100
 const COUNT_CHAN_ONCE_TIME = 5
 
 func doExercise()  {
-	c := make(chan int, 1000)
+	c := make(chan int, 100)
+	quit := make(chan int)
 	s1 := rand.NewSource(time.Now().UnixNano())
 	myRand = rand.New(s1)
 
@@ -47,8 +49,10 @@ func doExercise()  {
 		x := i
 		go crawlData(x, c)
 	}
-	go showData(c)
-	time.Sleep(50 * time.Second)
+	go showData(c, quit)
+
+	fmt.Println("Quit - ", <- quit) //he thong doi xong moi quit
+	//time.Sleep(50 * time.Second)
 }
 
 func sum(note string, s []int, c chan int)  {
